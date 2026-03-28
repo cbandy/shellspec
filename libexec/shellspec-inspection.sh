@@ -196,7 +196,7 @@ if run_builtin setopt NO_NOMATCH >/dev/null 2>&1; then
 fi
 
 # shellcheck disable=SC2034,SC3022
-if ( exec {fd}>/dev/null ) 2>/dev/null; then
+if ( eval 'exec {fd}>/dev/null' ) 2>/dev/null; then
   echo "SHELLSPEC_FDVAR_AVAILABLE=1"
 fi
 
