@@ -1,0 +1,35 @@
+name: Ubuntu
+
+on: [push, pull_request]
+
+env:
+  FORCE_COLOR: 1
+
+jobs:
+  ubuntu:
+    if: "!contains(github.event.head_commit.message, 'ci skip')"
+
+    # https://github.com/actions/runner-images/blob/-/images/ubuntu
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        runner:
+          - ubuntu-22.04 # Jammy Jellyfish
+          - ubuntu-24.04 # Noble Numbat
+        shell:
+          - dash
+          - bash
+          - busybox ash
+          - ksh
+          - mksh
+          - posh
+          - yash
+          - zsh
+    steps:
+      - run: sudo apt update --yes
+      - run: sudo apt install --yes '${{ case(matrix.shell == 'busybox ash', 'busybox', matrix.shell) }}'
+
+      - uses: actions/checkout@v6
+      - run: sudo env '-S ${{ matrix.shell }}' ./shellspec --task fixture:stat:prepare
+      - run: SH='${{ matrix.shell }}' contrib/various_test.sh

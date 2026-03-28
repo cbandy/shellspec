@@ -1,0 +1,54 @@
+name: Solaris
+
+on: [push, pull_request]
+
+env:
+  LANG: C
+  FORCE_COLOR: 1
+
+jobs:
+  parameters:
+    if: "!contains(github.event.head_commit.message, 'ci skip')"
+
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.releases.outputs.matrix }}
+      versions: ${{ steps.releases.outputs.versions }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          path: .github/checkout/solaris-vm
+          repository: vmactions/solaris-vm
+          sparse-checkout: conf
+
+      # https://github.com/vmactions/solaris-vm/blob/-/conf
+      - id: releases
+        run: |
+          ls -1 .github/checkout/solaris-vm/conf | tee -a /dev/stderr |
+          jq -cnrR '[inputs]
+          # greatest per major version
+          | map(capture("(?<value>(?<key>[0-9]+)[.0-9]+)(?!conf)"))
+          | group_by(.key) | map(max_by(.value | split(".") | map(tonumber)))
+          | ("matrix=\(map(.value))", "versions=\(from_entries)")' |
+          tee -a "${GITHUB_OUTPUT}"
+
+  solaris:
+    runs-on: ubuntu-latest
+    needs: [parameters]
+    strategy:
+      fail-fast: false
+      matrix:
+        release: ${{ fromJSON(needs.parameters.outputs.matrix) }}
+        shell:
+          - sh
+          - ksh
+          - bash
+          - zsh
+          - /usr/xpg4/bin/sh
+    steps:
+      - uses: actions/checkout@v6
+      - uses: vmactions/solaris-vm@v1
+        with:
+          usesh: true
+          release: ${{ matrix.release }}
+          run: SH='${{ matrix.shell }}' contrib/various_test.sh

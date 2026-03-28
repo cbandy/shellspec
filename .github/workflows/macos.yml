@@ -1,0 +1,41 @@
+name: macOS
+
+on: [push, pull_request]
+
+env:
+  FORCE_COLOR: 1
+
+jobs:
+  macos:
+    if: "!contains(github.event.head_commit.message, 'ci skip')"
+
+    # https://github.com/actions/runner-images/blob/-/images/macos
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        shell:
+          - dash
+          - bash
+          - ksh
+          - zsh
+        include:
+          # combined with the above
+          - { packager: Sonoma,   runner: macos-14 }
+          - { packager: Sequoia,  runner: macos-15 }
+          - { packager: Tahoe,    runner: macos-26 }
+          - { packager: Homebrew, runner: macos-latest }
+
+          # plus these additional combinations
+          - { packager: Sonoma,   runner: macos-14, shell: sh }
+          - { packager: Sequoia,  runner: macos-15, shell: sh }
+          - { packager: Tahoe,    runner: macos-26, shell: sh }
+          - { packager: Homebrew, runner: macos-latest, shell: mksh }
+          - { packager: Homebrew, runner: macos-latest, shell: yash }
+    steps:
+      - if: ${{ matrix.packager == 'Homebrew' }}
+        run: brew upgrade && brew install '${{ case(matrix.shell == 'dash', 'dash-shell', matrix.shell) }}'
+
+      - uses: actions/checkout@v6
+      - run: env '${{ matrix.shell }}' ./shellspec --shell '${{ matrix.shell }}' --task fixture:stat:prepare
+      - run: SH='${{ matrix.shell }}' contrib/various_test.sh

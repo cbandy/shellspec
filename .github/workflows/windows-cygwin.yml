@@ -12,24 +12,26 @@ defaults:
 
 jobs:
   windows-cygwin:
-    runs-on: windows-latest
     if: "!contains(github.event.head_commit.message, 'ci skip')"
+
+    # https://github.com/actions/runner-images/blob/-/images/windows
+    runs-on: windows-latest
     strategy:
-      matrix:
-        shells:
-          - {shell: sh,   package: sh}
-          - {shell: dash, package: dash}
-          - {shell: bash, package: bash}
-          - {shell: ash,  package: busybox}
-          - {shell: mksh, package: mksh}
-          - {shell: posh, package: posh}
-          - {shell: zsh,  package: zsh}
       fail-fast: false
+      matrix:
+        shell:
+          - sh
+          - dash
+          - bash
+          - ash
+          - mksh
+          - posh
+          - zsh
     steps:
-      - uses: actions/checkout@v4
-      - run: choco install -y --no-progress cygwin cyg-get
-      - run: cyg-get nc ${{ matrix.shells.package }}
+      - uses: actions/checkout@v6
+      - run: choco install --yes --no-progress cygwin cyg-get
+      - run: cyg-get nc '${{ case(matrix.shell == 'ash', 'busybox', matrix.shell) }}'
       - run: cygcheck -c
-      - run: ${{ matrix.shells.shell }} ./shellspec --task fixture:stat:prepare
-      - run: ${{ matrix.shells.shell }} -c "rm helper/fixture/stat/no-permission"
-      - run: ${{ matrix.shells.shell }} ./shellspec
+      - run: env '${{ matrix.shell }}' ./shellspec --task fixture:stat:prepare
+      - run: env '${{ matrix.shell }}' -c "rm helper/fixture/stat/no-permission"
+      - run: env '${{ matrix.shell }}' ./shellspec

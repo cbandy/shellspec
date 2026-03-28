@@ -7,15 +7,15 @@ env:
 
 jobs:
   ubuntu-jammy:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     if: >-
       github.ref == 'refs/heads/master' &&
       !contains(github.event.head_commit.message, 'ci skip')
     steps:
       - uses: actions/checkout@v4
-      - run: sudo apt-get update
+      - run: sudo apt update --yes
       - name: Install packages
-        run: sudo apt-get install -y bash kcov
+        run: sudo apt install --yes bash kcov
       - name: Install cc-test-reporter
         env:
           CC_TEST_REPORTER_URL: https://codeclimate.com/downloads/test-reporter/test-reporter-latest-linux-amd64

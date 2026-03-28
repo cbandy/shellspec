@@ -1,0 +1,48 @@
+name: OpenBSD
+
+on: [push, pull_request]
+
+env:
+  FORCE_COLOR: 1
+
+jobs:
+  parameters:
+    if: "!contains(github.event.head_commit.message, 'ci skip')"
+
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.releases.outputs.matrix }}
+      versions: ${{ steps.releases.outputs.versions }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          path: .github/checkout/openbsd-vm
+          repository: vmactions/openbsd-vm
+          sparse-checkout: conf
+
+      # https://github.com/vmactions/openbsd-vm/blob/-/conf
+      - id: releases
+        run: |
+          ls -1 .github/checkout/openbsd-vm/conf | tee -a /dev/stderr |
+          jq -cnrR '[inputs]
+          | map(capture("(?<value>[0-9]+[.0-9]+)(?!conf)") | .value) | unique
+          | ("matrix=\(map(select(tonumber >= 7.3)))", "versions=\(sort_by(tonumber))")' |
+          tee -a "${GITHUB_OUTPUT}"
+
+  openbsd:
+    runs-on: ubuntu-latest
+    needs: [parameters]
+    strategy:
+      fail-fast: false
+      matrix:
+        release: ${{ fromJSON(needs.parameters.outputs.matrix) }}
+        shell:
+          - sh
+          - ksh
+    steps:
+      - uses: actions/checkout@v6
+      - uses: vmactions/openbsd-vm@v1
+        with:
+          usesh: true
+          release: ${{ matrix.release }}
+          run: SH='${{ matrix.shell }}' contrib/various_test.sh
