@@ -9,7 +9,6 @@ Describe "core/matchers/have/stat.sh"
 
   Describe 'has setgid matcher'
     Skip if "not exist setgid file" not_exist 'stat/setgid'
-    Skip if "busybox-w32 not supported" busybox_w32
 
     Example 'example'
       Path target="$FIXTURE/stat/setgid"
@@ -38,7 +37,6 @@ Describe "core/matchers/have/stat.sh"
 
   Describe 'has setuid matcher'
     Skip if "not exist setuid file" not_exist 'stat/setuid'
-    Skip if "busybox-w32 not supported" busybox_w32
 
     Example 'example'
       Path target="$FIXTURE/stat/setuid"
@@ -67,7 +65,6 @@ Describe "core/matchers/have/stat.sh"
 
   Describe 'should have setgid matcher'
     Skip if "not exist setgid file" not_exist 'stat/setgid'
-    Skip if "busybox-w32 not supported" busybox_w32
 
     Example 'example'
       Path target="$FIXTURE/stat/setgid"
@@ -96,7 +93,6 @@ Describe "core/matchers/have/stat.sh"
 
   Describe 'should have setuid matcher'
     Skip if "not exist setuid file" not_exist 'stat/setuid'
-    Skip if "busybox-w32 not supported" busybox_w32
 
     Example 'example'
       Path target="$FIXTURE/stat/setuid"

@@ -137,7 +137,6 @@ Describe "core/matchers/be/stat.sh"
 
   Describe 'be pipe matcher'
     Skip if "not exist pipe file" not_exist "stat/pipe"
-    Skip if "busybox-w32 not supported" busybox_w32
 
     Example 'example'
       Path pipe="$FIXTURE/stat/pipe"
@@ -206,7 +205,6 @@ Describe "core/matchers/be/stat.sh"
 
     It 'does not match when path is not readable'
       Skip if "I am root" check_root
-      Skip if "busybox-w32 always readable" busybox_w32
       subject() { %- "$FIXTURE/stat/no-permission"; }
       When run shellspec_matcher_be_readable
       The status should be failure
@@ -276,7 +274,6 @@ Describe "core/matchers/be/stat.sh"
 
   Describe 'be block device matcher'
     Skip if "not exist block-device file" not_exist "stat/block-device"
-    Skip if "busybox-w32 not supported" busybox_w32
 
     Example 'example'
       Path block-device="$FIXTURE/stat/block-device"
@@ -304,7 +301,6 @@ Describe "core/matchers/be/stat.sh"
 
   Describe 'be character device matcher'
     Skip if "not exist character-device file" not_exist "stat/character-device"
-    Skip if "busybox-w32 not supported" busybox_w32
 
     Example 'example'
       Path character-device="$FIXTURE/stat/character-device"

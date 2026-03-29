@@ -377,7 +377,6 @@ Describe "libexec/shellspec.sh"
     End
 
     It 'follows symlinks and finds directories'
-      Skip if "busybox-w32 not supported" busybox_w32
       if [ "$1" = "finddirs_find" ]; then
         Skip if "find is not found or not supported" not_supported_find
       fi

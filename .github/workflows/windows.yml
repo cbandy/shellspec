@@ -64,7 +64,7 @@ jobs:
       - run: cyg-get nc '${{ case(matrix.shell == 'ash', 'busybox', matrix.shell) }}'
       - run: cygcheck -c
       - run: env '${{ matrix.shell }}' ./shellspec --task fixture:stat:prepare
-      - run: env '${{ matrix.shell }}' -c "rm helper/fixture/stat/no-permission"
+      - run: env '${{ matrix.shell }}' -c "rm helper/fixture/stat/block-device"
       - run: env '${{ matrix.shell }}' ./shellspec
 
   windows-gitbash:
@@ -88,6 +88,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - run: env '${{ matrix.shell }}' ./shellspec --task fixture:stat:prepare
+      - run: env '${{ matrix.shell }}' -c "rm helper/fixture/stat/block-device"
       - run: env '${{ matrix.shell }}' ./shellspec
 
   # https://www.msys2.org/docs/ci
@@ -118,4 +119,5 @@ jobs:
           update: true
           install: ${{ case(matrix.shell == 'busybox ash', 'busybox', matrix.shell) }}
       - run: env '-S ${{ matrix.shell }}' ./shellspec --task fixture:stat:prepare
+      - run: env '-S ${{ matrix.shell }}' -c "rm helper/fixture/stat/block-device"
       - run: env '-S ${{ matrix.shell }}' ./shellspec
