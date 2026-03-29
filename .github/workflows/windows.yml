@@ -1,0 +1,121 @@
+name: Windows
+
+on: [push, pull_request]
+
+env:
+  FORCE_COLOR: 1
+
+jobs:
+  windows-busybox:
+    name: Windows BusyBox
+    if: "!contains(github.event.head_commit.message, 'ci skip')"
+
+    # https://github.com/actions/runner-images/blob/-/images/windows
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # https://community.chocolatey.org/packages/busybox
+        release:
+          - 5398.0.0 # https://frippery.org/busybox/release-notes/FRP-5398.html
+          - 5467.0.0 # https://frippery.org/busybox/release-notes/FRP-5467.html
+          - 5579.0.0 # https://frippery.org/busybox/release-notes/FRP-5579.html
+          - 5857.0.0 # https://frippery.org/busybox/release-notes/FRP-5857.html
+        shell:
+          - sh
+          - ash
+          - bash
+    defaults:
+      run:
+        shell: cmd
+    env:
+      PATH: 'C:\Program Files\Git\bin;C:\Windows\System32;C:\Windows;C:\ProgramData\Chocolatey\bin'
+    steps:
+      - uses: actions/checkout@v6
+      - run: choco install --yes --no-progress busybox --version='${{ matrix.release }}'
+      - run: busybox env '${{ matrix.shell }}' ./shellspec --task fixture:stat:prepare
+      - run: busybox env '${{ matrix.shell }}' ./shellspec
+
+  windows-cygwin:
+    name: Windows Cygwin
+    if: "!contains(github.event.head_commit.message, 'ci skip')"
+
+    # https://github.com/actions/runner-images/blob/-/images/windows
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shell:
+          - sh
+          - dash
+          - bash
+          - ash
+          - mksh
+          - posh
+          - zsh
+    defaults:
+      run:
+        shell: cmd
+    env:
+      PATH: 'C:\tools\cygwin\bin;C:\Program Files\Git\bin;C:\Windows\System32;C:\Windows;C:\Windows\System32\WindowsPowerShell\v1.0;C:\ProgramData\Chocolatey\bin'
+    steps:
+      - uses: actions/checkout@v6
+      - run: choco install --yes --no-progress cygwin cyg-get
+      - run: cyg-get nc '${{ case(matrix.shell == 'ash', 'busybox', matrix.shell) }}'
+      - run: cygcheck -c
+      - run: env '${{ matrix.shell }}' ./shellspec --task fixture:stat:prepare
+      - run: env '${{ matrix.shell }}' -c "rm helper/fixture/stat/no-permission"
+      - run: env '${{ matrix.shell }}' ./shellspec
+
+  windows-gitbash:
+    name: Windows GitBash
+    if: "!contains(github.event.head_commit.message, 'ci skip')"
+
+    # https://github.com/actions/runner-images/blob/-/images/windows
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shell:
+          - sh
+          - dash
+          - bash
+    defaults:
+      run:
+        shell: bash
+    env:
+      PATH: 'C:\Program Files\Git\bin;C:\windows\system32;C:\windows'
+    steps:
+      - uses: actions/checkout@v6
+      - run: env '${{ matrix.shell }}' ./shellspec --task fixture:stat:prepare
+      - run: env '${{ matrix.shell }}' ./shellspec
+
+  # https://www.msys2.org/docs/ci
+  windows-msys:
+    name: Windows MSYS
+    if: "!contains(github.event.head_commit.message, 'ci skip')"
+
+    # https://github.com/actions/runner-images/blob/-/images/windows
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        shell:
+          - sh
+          - dash
+          - bash
+          - busybox ash
+          - mksh
+          - zsh
+    defaults:
+      run:
+        shell: msys2 {0}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: UCRT64
+          update: true
+          install: ${{ case(matrix.shell == 'busybox ash', 'busybox', matrix.shell) }}
+      - run: env '-S ${{ matrix.shells.shell }}' ./shellspec --task fixture:stat:prepare
+      - run: env '-S ${{ matrix.shells.shell }}' ./shellspec
