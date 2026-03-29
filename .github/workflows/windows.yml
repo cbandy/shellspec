@@ -33,8 +33,8 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - run: choco install --yes --no-progress busybox --version='${{ matrix.release }}'
-      - run: busybox env '${{ matrix.shell }}' ./shellspec --task fixture:stat:prepare
-      - run: busybox env '${{ matrix.shell }}' ./shellspec
+      - run: busybox ${{ matrix.shell }} ./shellspec --task fixture:stat:prepare
+      - run: busybox ${{ matrix.shell }} ./shellspec
 
   windows-cygwin:
     name: Windows Cygwin
