@@ -117,5 +117,5 @@ jobs:
           msystem: UCRT64
           update: true
           install: ${{ case(matrix.shell == 'busybox ash', 'busybox', matrix.shell) }}
-      - run: env '-S ${{ matrix.shells.shell }}' ./shellspec --task fixture:stat:prepare
-      - run: env '-S ${{ matrix.shells.shell }}' ./shellspec
+      - run: env '-S ${{ matrix.shell }}' ./shellspec --task fixture:stat:prepare
+      - run: env '-S ${{ matrix.shell }}' ./shellspec
