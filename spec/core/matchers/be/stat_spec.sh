@@ -8,6 +8,10 @@ Describe "core/matchers/be/stat.sh"
   not_exist() { [ ! -e "$FIXTURE/$1" ]; }
   check_root() { [ "$(@id -u)" = 0 ]; }
 
+  # DEBUG
+  list_stat_fixtures() { printf 'OSTYPE="%s"\n' "${OSTYPE:-}"; @ls -lh "$FIXTURE/stat"; }
+  AfterAll 'list_stat_fixtures'
+
   Describe 'exist matcher'
     Example 'example'
       Path exist-file="$FIXTURE/exist"
