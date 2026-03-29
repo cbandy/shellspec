@@ -35,6 +35,7 @@ jobs:
       - run: choco install --yes --no-progress busybox --version='${{ matrix.release }}'
       - run: busybox ${{ matrix.shell }} ./shellspec --task fixture:stat:prepare
       - run: busybox ${{ matrix.shell }} ./shellspec
+        timeout-minutes: 10
 
   windows-cygwin:
     name: Windows Cygwin
@@ -64,8 +65,9 @@ jobs:
       - run: cyg-get nc '${{ case(matrix.shell == 'ash', 'busybox', matrix.shell) }}'
       - run: cygcheck -c
       - run: env '${{ matrix.shell }}' ./shellspec --task fixture:stat:prepare
-      - run: env '${{ matrix.shell }}' -c "rm helper/fixture/stat/block-device"
+      - run: env '${{ matrix.shell }}' -c "rm helper/fixture/stat/block-device helper/fixture/stat/no-permission"
       - run: env '${{ matrix.shell }}' ./shellspec
+        timeout-minutes: 10
 
   windows-gitbash:
     name: Windows GitBash
@@ -90,6 +92,7 @@ jobs:
       - run: env '${{ matrix.shell }}' ./shellspec --task fixture:stat:prepare
       - run: env '${{ matrix.shell }}' -c "rm helper/fixture/stat/block-device"
       - run: env '${{ matrix.shell }}' ./shellspec
+        timeout-minutes: 10
 
   # https://www.msys2.org/docs/ci
   windows-msys:
@@ -121,3 +124,4 @@ jobs:
       - run: env '-S ${{ matrix.shell }}' ./shellspec --task fixture:stat:prepare
       - run: env '-S ${{ matrix.shell }}' -c "rm helper/fixture/stat/block-device"
       - run: env '-S ${{ matrix.shell }}' ./shellspec
+        timeout-minutes: 10
